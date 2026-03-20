@@ -193,7 +193,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     switch (name) {
       case "get_secret": {
-        const params = args as GetSecretParams;
+        const params = args as unknown as GetSecretParams;
 
         const reference = credentialsManager.getSecretReference(params);
 
@@ -235,7 +235,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "mint_token": {
-        const params = args as MintTokenParams;
+        const params = args as unknown as MintTokenParams;
 
         const token = credentialsManager.mintToken(params);
 
@@ -279,7 +279,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "revoke_token": {
-        const params = args as RevokeTokenParams;
+        const params = args as unknown as RevokeTokenParams;
 
         const revoked = credentialsManager.revokeToken(params.token_id);
 
@@ -312,7 +312,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "audit_search": {
-        const params = args as AuditSearchParams;
+        const params = args as unknown as AuditSearchParams;
 
         const results = auditLogger.search(params);
 
