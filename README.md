@@ -49,7 +49,7 @@ The MCP Credentials Broker acts as a centralized security layer that:
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/ars-system/mcp-credentials-broker.git
 cd mcp-credentials-broker
 
 # Install dependencies
@@ -410,6 +410,95 @@ npm run dev
     "actor": "mcp-client"
   }
 }
+```
+
+## 📦 Publishing to npm
+
+This project is configured to automatically publish to npm when you push to the `main` branch using GitHub Actions.
+
+### Setup Instructions
+
+#### 1. Create an npm Account
+
+If you don't have one, create an account at [npmjs.com](https://www.npmjs.com/signup)
+
+#### 2. Generate an npm Access Token
+
+1. Log in to [npmjs.com](https://www.npmjs.com)
+2. Click on your profile icon → **Access Tokens**
+3. Click **Generate New Token** → **Classic Token**
+4. Select **Automation** token type
+5. Copy the generated token
+
+#### 3. Add npm Token to GitHub Secrets
+
+1. Go to your GitHub repository
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Name: `NPM_TOKEN`
+5. Value: Paste your npm token
+6. Click **Add secret**
+
+#### 4. Update Repository URLs
+
+Before publishing, update the repository URLs in `package.json`:
+
+```json
+"repository": {
+  "type": "git",
+  "url": "git+https://github.com/ars-system/mcp-credentials-broker.git"
+},
+"bugs": {
+  "url": "https://github.com/ars-system/mcp-credentials-broker/issues"
+},
+"homepage": "https://github.com/ars-system/mcp-credentials-broker#readme"
+```
+
+#### 5. Publish
+
+Once configured, simply push to the `main` branch:
+
+```bash
+git add .
+git commit -m "Ready for npm publish"
+git push origin main
+```
+
+The GitHub Actions workflow will automatically:
+
+- Install dependencies
+- Run linters
+- Build the TypeScript project
+- Publish to npm with provenance
+
+### Manual Publishing
+
+You can also publish manually:
+
+```bash
+# Login to npm
+npm login
+
+# Build the project
+npm run build
+
+# Publish
+npm publish --access public
+```
+
+### Version Management
+
+Update the version in `package.json` before publishing:
+
+```bash
+# Patch release (1.0.0 → 1.0.1)
+npm version patch
+
+# Minor release (1.0.0 → 1.1.0)
+npm version minor
+
+# Major release (1.0.0 → 2.0.0)
+npm version major
 ```
 
 ## 🤝 Contributing

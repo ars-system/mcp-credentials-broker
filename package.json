@@ -25,6 +25,25 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ars-system/mcp-credentials-broker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ars-system/mcp-credentials-broker/issues"
+  },
+  "homepage": "https://github.com/ars-system/mcp-credentials-broker#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "mcp-credentials-broker": "./dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
     "jsonwebtoken": "^9.0.2",
