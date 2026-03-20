@@ -14,6 +14,10 @@ build/
 # Keep src files
 !src/**/*.js
 
+# Keep config files
+!eslint.config.js
+!*.config.js
+
 # Logs
 logs/
 *.log
