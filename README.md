@@ -1,64 +1,60 @@
 # MCP Credentials Broker
 
-A Model Context Protocol (MCP) server that provides a **security layer for managing short-lived credentials and tokens**. This broker removes long-lived secrets from MCP server runtime environments and enforces policy-based access control with comprehensive audit logging.
+A secure credential management layer for Model Context Protocol (MCP) servers. Stop hardcoding API keys in environment variables and start using short-lived, scoped tokens with built-in audit logging.
 
-## 🎯 Overview
+## Why Use This?
 
-The MCP Credentials Broker acts as a centralized security layer that:
+If you're building MCP servers that need to access external APIs (GitHub, AWS, GCP, etc.), you've probably hardcoded API keys in environment variables. This broker solves that problem by:
 
-- **Issues short-lived, scoped credentials** (OAuth tokens, AWS STS credentials, GitHub tokens, etc.)
-- **Enforces policies** per tool/action (allowlist endpoints, denylist data types)
-- **Produces audit logs** for every credential issuance and tool invocation
-- **Eliminates hardcoded API keys** in environment variables across MCP servers
+- Issuing short-lived tokens instead of exposing long-lived secrets
+- Enforcing security policies (TTL limits, scope restrictions, endpoint controls)
+- Logging every credential operation for compliance and debugging
+- Centralizing credential management across multiple MCP servers
 
-## 🚀 Key Features
+## Features
 
-### 1. Secret Reference Management
+**Secret Management**
 
-- Store secrets securely in the broker
-- Issue time-limited secret references (not raw secrets)
-- Automatic expiration and cleanup
+- Store secrets once, get time-limited references instead of raw values
+- Automatic cleanup of expired references
 
-### 2. Short-Lived Token Generation
+**Multi-Provider Token Generation**
 
-- Support for multiple providers (GitHub, AWS, GCP, Azure, OAuth2)
-- Configurable TTL with provider-specific maximums
+- GitHub, AWS, GCP, Azure, and generic OAuth2 support
+- Configurable TTLs with provider-specific limits
 - JWT-based tokens with scope enforcement
 
-### 3. Token Lifecycle Management
+**Token Lifecycle**
 
-- Immediate token revocation
-- Automatic expiration
+- Revoke tokens immediately when needed
+- Automatic expiration handling
 - Token verification and validation
 
-### 4. Comprehensive Audit Logging
+**Audit Trail**
 
-- Every credential operation logged
-- Searchable audit trail with filtering
-- Success/failure tracking
-- Actor and resource tracking
+- Every operation is logged with timestamps and actor information
+- Search and filter audit logs by time range, actor, or query
+- Track success/failure rates
 
-### 5. Policy Enforcement
+**Policy Enforcement**
 
-- Maximum TTL constraints
-- Endpoint allowlisting/denylisting
-- Data type restrictions
-- Approval requirements
+- Set maximum TTL constraints per provider
+- Control which endpoints can be accessed
+- Require approval for sensitive operations
 
-## 📦 Installation
+## Installation
 
 ```bash
-# Clone the repository
+npm install @ars-system/mcp-credentials-broker
+```
+
+Or clone and build from source:
+
+```bash
 git clone https://github.com/ars-system/mcp-credentials-broker.git
 cd mcp-credentials-broker
-
-# Install dependencies
 npm install
-
-# Build the project
 npm run build
-
-# Run the server
 npm start
 ```
 
@@ -334,23 +330,19 @@ Get statistics about the credentials broker.
 - Max TTL: 24 hours
 - Customizable endpoints
 
-## 📊 Use Cases
+## Use Cases
 
-### 1. Secure MCP Server Integration
+**Secure MCP Server Integration**  
+Replace hardcoded API keys in your MCP servers with short-lived tokens from the broker.
 
-Replace hardcoded API keys in other MCP servers with short-lived tokens from the broker.
+**Multi-Service Authentication**  
+Manage credentials for multiple cloud providers (AWS, GCP, Azure) from one place.
 
-### 2. Multi-Service Authentication
+**Compliance & Auditing**  
+Maintain audit logs for SOC2, HIPAA, or other compliance requirements.
 
-Centralize credential management for services that integrate with multiple cloud providers.
-
-### 3. Compliance & Auditing
-
-Maintain comprehensive audit logs for compliance requirements (SOC2, HIPAA, etc.).
-
-### 4. Development Teams
-
-Enforce organizational security policies across all MCP tool usage.
+**Team Security Policies**  
+Enforce consistent security policies across all MCP tools in your organization.
 
 ## 🧪 Development
 
@@ -412,103 +404,14 @@ npm run dev
 }
 ```
 
-## 📦 Publishing to npm
+## Contributing
 
-This project is configured to automatically publish to npm when you push to the `main` branch using GitHub Actions.
+Contributions welcome! Please:
 
-### Setup Instructions
-
-#### 1. Create an npm Account
-
-If you don't have one, create an account at [npmjs.com](https://www.npmjs.com/signup)
-
-#### 2. Generate an npm Access Token
-
-1. Log in to [npmjs.com](https://www.npmjs.com)
-2. Click on your profile icon → **Access Tokens**
-3. Click **Generate New Token** → **Classic Token**
-4. Select **Automation** token type
-5. Copy the generated token
-
-#### 3. Add npm Token to GitHub Secrets
-
-1. Go to your GitHub repository
-2. Navigate to **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. Name: `NPM_TOKEN`
-5. Value: Paste your npm token
-6. Click **Add secret**
-
-#### 4. Update Repository URLs
-
-Before publishing, update the repository URLs in `package.json`:
-
-```json
-"repository": {
-  "type": "git",
-  "url": "git+https://github.com/ars-system/mcp-credentials-broker.git"
-},
-"bugs": {
-  "url": "https://github.com/ars-system/mcp-credentials-broker/issues"
-},
-"homepage": "https://github.com/ars-system/mcp-credentials-broker#readme"
-```
-
-#### 5. Publish
-
-Once configured, simply push to the `main` branch:
-
-```bash
-git add .
-git commit -m "Ready for npm publish"
-git push origin main
-```
-
-The GitHub Actions workflow will automatically:
-
-- Install dependencies
-- Run linters
-- Build the TypeScript project
-- Publish to npm with provenance
-
-### Manual Publishing
-
-You can also publish manually:
-
-```bash
-# Login to npm
-npm login
-
-# Build the project
-npm run build
-
-# Publish
-npm publish --access public
-```
-
-### Version Management
-
-Update the version in `package.json` before publishing:
-
-```bash
-# Patch release (1.0.0 → 1.0.1)
-npm version patch
-
-# Minor release (1.0.0 → 1.1.0)
-npm version minor
-
-# Major release (1.0.0 → 2.0.0)
-npm version major
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please ensure:
-
-- Code follows TypeScript best practices
-- All functions are properly typed
-- Audit logging is maintained for new operations
-- Tests are included for new features
+- Follow existing TypeScript patterns
+- Maintain proper type definitions
+- Keep audit logging for all credential operations
+- Add tests for new features
 
 ## 📄 License
 
@@ -529,4 +432,4 @@ MIT License - see LICENSE file for details
 
 ---
 
-**Differentiator**: Unlike other MCP servers that hardcode `API_KEY` in environment variables, this tool becomes the "security layer" for an organization, providing centralized credential management, policy enforcement, and audit trails.
+**Built by [@ars-system](https://github.com/ars-system)** • [Report Issues](https://github.com/ars-system/mcp-credentials-broker/issues)
