@@ -9,7 +9,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - name: Checkout code
@@ -23,6 +23,18 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump patch version
+        run: >
+          npm version patch -m 'chore: bump version to %s [skip ci]'
+
+      - name: Push version changes
+        run: git push --follow-tags
 
       - name: Run linter
         run: npm run lint
