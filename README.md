@@ -1,6 +1,6 @@
 # MCP Credentials Broker
 
-A secure credential management layer for Model Context Protocol (MCP) servers. Stop hardcoding API keys in environment variables and start using short-lived, scoped tokens with built-in audit logging.
+A secure credential management layer for Model Context Protocol (MCP) servers. Stop hardcoding API keys in environment variables and start using short-lived, scoped tokens.
 
 ## Why Use This?
 
@@ -8,7 +8,6 @@ If you're building MCP servers that need to access external APIs (GitHub, AWS, G
 
 - Issuing short-lived tokens instead of exposing long-lived secrets
 - Enforcing security policies (TTL limits, scope restrictions, endpoint controls)
-- Logging every credential operation for compliance and debugging
 - Centralizing credential management across multiple MCP servers
 
 ## Features
@@ -29,12 +28,6 @@ If you're building MCP servers that need to access external APIs (GitHub, AWS, G
 - Revoke tokens immediately when needed
 - Automatic expiration handling
 - Token verification and validation
-
-**Audit Trail**
-
-- Every operation is logged with timestamps and actor information
-- Search and filter audit logs by time range, actor, or query
-- Track success/failure rates
 
 **Policy Enforcement**
 
@@ -81,8 +74,6 @@ Add to your MCP client settings (e.g., Claude Desktop config):
 # Optional: Custom JWT secret for token signing
 JWT_SECRET=your-secure-secret-key
 
-# Optional: Custom audit log directory
-AUDIT_LOG_DIR=./audit-logs
 ```
 
 ## 🛠️ Available Tools
@@ -191,31 +182,6 @@ Immediately revokes a previously issued token.
 }
 ```
 
-### 5. `audit_search`
-
-Search and retrieve audit logs for credential operations.
-
-**Parameters:**
-
-- `query` (string, optional): Free-text search query
-- `time_range` (object, optional): Time range filter
-  - `start` (number): Start timestamp (Unix milliseconds)
-  - `end` (number): End timestamp (Unix milliseconds)
-- `actor` (string, optional): Filter by actor/user
-
-**Example:**
-
-```json
-{
-  "query": "github",
-  "time_range": {
-    "start": 1234567890000,
-    "end": 1234567990000
-  },
-  "actor": "mcp-client"
-}
-```
-
 ### 6. `get_broker_stats`
 
 Get statistics about the credentials broker.
@@ -228,17 +194,7 @@ Get statistics about the credentials broker.
   "stats": {
     "activeTokens": 5,
     "activeReferences": 3,
-    "storedSecrets": 10,
-    "audit": {
-      "totalLogs": 150,
-      "successfulOperations": 145,
-      "failedOperations": 5,
-      "actionBreakdown": {
-        "get_secret": 50,
-        "mint_token": 80,
-        "revoke_token": 20
-      }
-    }
+    "storedSecrets": 10
   }
 }
 ```
@@ -256,13 +212,6 @@ Get statistics about the credentials broker.
 │  │  - Token lifecycle management            │  │
 │  │  - Policy enforcement                    │  │
 │  │  - Provider configurations               │  │
-│  └──────────────────────────────────────────┘  │
-│                                                 │
-│  ┌──────────────────────────────────────────┐  │
-│  │      Audit Logger                        │  │
-│  │  - Comprehensive logging                 │  │
-│  │  - Searchable audit trail                │  │
-│  │  - Persistent storage                    │  │
 │  └──────────────────────────────────────────┘  │
 │                                                 │
 │  ┌──────────────────────────────────────────┐  │
@@ -289,14 +238,6 @@ Get statistics about the credentials broker.
 - Endpoint allowlisting/denylisting
 - Approval requirements for sensitive operations
 - Scope-based access control
-
-### Audit Trail
-
-- Every operation logged with timestamp
-- Actor tracking for accountability
-- Success/failure status
-- Detailed operation metadata
-- Persistent log storage
 
 ## 🔄 Provider Support
 
@@ -337,9 +278,6 @@ Replace hardcoded API keys in your MCP servers with short-lived tokens from the 
 
 **Multi-Service Authentication**  
 Manage credentials for multiple cloud providers (AWS, GCP, Azure) from one place.
-
-**Compliance & Auditing**  
-Maintain audit logs for SOC2, HIPAA, or other compliance requirements.
 
 **Team Security Policies**  
 Enforce consistent security policies across all MCP tools in your organization.
@@ -388,20 +326,6 @@ npm run dev
     "ttl_seconds": 1800
   }
 }
-
-// 4. Check broker statistics
-{
-  "tool": "get_broker_stats"
-}
-
-// 5. Search audit logs
-{
-  "tool": "audit_search",
-  "params": {
-    "query": "github",
-    "actor": "mcp-client"
-  }
-}
 ```
 
 ## Contributing
@@ -410,7 +334,6 @@ Contributions welcome! Please:
 
 - Follow existing TypeScript patterns
 - Maintain proper type definitions
-- Keep audit logging for all credential operations
 - Add tests for new features
 
 ## 📄 License
@@ -427,8 +350,7 @@ MIT License - see LICENSE file for details
 1. **Change the JWT secret** in production environments
 2. **Secure the audit log directory** with appropriate file permissions
 3. **Rotate secrets regularly** using the store_secret tool
-4. **Monitor audit logs** for suspicious activity
-5. **Set appropriate TTLs** based on your security requirements
+4. **Set appropriate TTLs** based on your security requirements
 
 ---
 
