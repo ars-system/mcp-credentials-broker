@@ -13,15 +13,12 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { CredentialsManager } from "./credentials-manager.js";
-import { AuditLogger } from "./audit-logger.js";
-import { GetSecretParams, MintTokenParams, RevokeTokenParams, AuditSearchParams } from "./types.js";
+import { GetSecretParams, MintTokenParams, RevokeTokenParams } from "./types.js";
 
 // Initialize core components
 const credentialsManager = new CredentialsManager();
-const auditLogger = new AuditLogger();
 
 // Default actor for operations
-const DEFAULT_ACTOR = "mcp-client";
 
 // Periodic cleanup of expired tokens and references
 setInterval(() => {
@@ -101,38 +98,6 @@ const tools: Tool[] = [
     },
   },
   {
-    name: "audit_search",
-    description:
-      "Search and retrieve audit logs for credential operations. Supports filtering by time range, actor, and free-text query.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description: "Free-text search query",
-        },
-        time_range: {
-          type: "object",
-          properties: {
-            start: {
-              type: "number",
-              description: "Start timestamp (Unix milliseconds)",
-            },
-            end: {
-              type: "number",
-              description: "End timestamp (Unix milliseconds)",
-            },
-          },
-          description: "Time range filter for logs",
-        },
-        actor: {
-          type: "string",
-          description: "Filter by actor/user who performed the operation",
-        },
-      },
-    },
-  },
-  {
     name: "store_secret",
     description:
       "Store a secret in the credentials broker. This secret can then be referenced using get_secret.",
@@ -197,18 +162,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const reference = credentialsManager.getSecretReference(params);
 
-        auditLogger.log(
-          "get_secret",
-          DEFAULT_ACTOR,
-          true,
-          {
-            secretName: params.name,
-            purpose: params.purpose,
-            ttl: params.ttl_seconds || 3600,
-          },
-          params.name
-        );
-
         return {
           content: [
             {
@@ -238,19 +191,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const params = args as unknown as MintTokenParams;
 
         const token = credentialsManager.mintToken(params);
-
-        auditLogger.log(
-          "mint_token",
-          DEFAULT_ACTOR,
-          true,
-          {
-            provider: params.provider,
-            scopes: params.scopes,
-            resource: params.resource,
-            ttl: params.ttl_seconds,
-          },
-          params.resource
-        );
 
         return {
           content: [
@@ -283,15 +223,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const revoked = credentialsManager.revokeToken(params.token_id);
 
-        auditLogger.log(
-          "revoke_token",
-          DEFAULT_ACTOR,
-          revoked,
-          { tokenId: params.token_id },
-          params.token_id,
-          revoked ? undefined : "Token not found or already expired"
-        );
-
         return {
           content: [
             {
@@ -311,29 +242,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case "audit_search": {
-        const params = args as unknown as AuditSearchParams;
-
-        const results = auditLogger.search(params);
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  success: true,
-                  count: results.length,
-                  logs: results,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      }
-
       case "store_secret": {
         const { name, value, tags } = args as {
           name: string;
@@ -342,14 +250,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
 
         credentialsManager.storeSecret(name, value, tags);
-
-        auditLogger.log(
-          "tool_invocation",
-          DEFAULT_ACTOR,
-          true,
-          { action: "store_secret", secretName: name, hasTags: !!tags },
-          name
-        );
 
         return {
           content: [
@@ -369,12 +269,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "get_broker_stats": {
-        const stats = auditLogger.getStats();
         const brokerStats = {
           activeTokens: credentialsManager.getActiveTokensCount(),
           activeReferences: credentialsManager.getActiveReferencesCount(),
           storedSecrets: credentialsManager.getSecretsCount(),
-          audit: stats,
         };
 
         return {
@@ -399,16 +297,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-    // Log the failed operation
-    auditLogger.log(
-      "tool_invocation",
-      DEFAULT_ACTOR,
-      false,
-      { tool: name, arguments: args },
-      undefined,
-      errorMessage
-    );
 
     return {
       content: [

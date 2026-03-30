@@ -37,17 +37,6 @@ export interface Policy {
   requiresApproval?: boolean;
 }
 
-export interface AuditLogEntry {
-  id: string;
-  timestamp: number;
-  action: "get_secret" | "mint_token" | "revoke_token" | "tool_invocation";
-  actor: string;
-  resource?: string;
-  details: Record<string, unknown>;
-  success: boolean;
-  errorMessage?: string;
-}
-
 export interface GetSecretParams {
   name: string;
   purpose: string;
@@ -63,15 +52,6 @@ export interface MintTokenParams {
 
 export interface RevokeTokenParams {
   token_id: string;
-}
-
-export interface AuditSearchParams {
-  query?: string;
-  time_range?: {
-    start: number;
-    end: number;
-  };
-  actor?: string;
 }
 
 export type Provider = "github" | "aws" | "gcp" | "azure" | "oauth2" | "custom";
