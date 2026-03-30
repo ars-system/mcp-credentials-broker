@@ -1,6 +1,6 @@
 {
   "name": "mcp-credentials-broker",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP Secrets & Token Broker - A security layer for managing short-lived credentials and tokens",
   "main": "dist/index.js",
   "type": "module",
