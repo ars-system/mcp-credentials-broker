@@ -14,6 +14,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { CredentialsManager } from "./credentials-manager.js";
 import { GetSecretParams, MintTokenParams, RevokeTokenParams } from "./types.js";
+import { startOAuthWebFlow } from "./oauth-web-flow.js";
 
 // Initialize core components
 const credentialsManager = new CredentialsManager();
@@ -60,7 +61,7 @@ const tools: Tool[] = [
       properties: {
         provider: {
           type: "string",
-          enum: ["github", "aws", "gcp", "azure", "oauth2", "custom"],
+          enum: ["github", "aws", "gcp", "azure", "oauth2", "okta", "custom"],
           description: "Provider type for the token",
         },
         scopes: {
@@ -118,6 +119,56 @@ const tools: Tool[] = [
         },
       },
       required: ["name", "value"],
+    },
+  },
+  {
+    name: "start_oauth_flow",
+    description:
+      "Authenticate a provider via browser-based OAuth2 web flow. Opens the browser for the user to log in — no client_id or client_secret needed from you. Stores the resulting access token under secret_name for use with get_secret/resolve_secret.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        provider: {
+          type: "string",
+          enum: ["github", "google", "azure", "okta", "oauth2"],
+          description: "OAuth2 provider to authenticate with",
+        },
+        scopes: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of OAuth2 scopes to request (e.g. ['repo', 'read:user'] for GitHub)",
+        },
+        secret_name: {
+          type: "string",
+          description:
+            "Name to store the access token under. Use this name with get_secret/resolve_secret later.",
+        },
+        authorization_endpoint: {
+          type: "string",
+          description:
+            "Custom authorization URL — only needed for okta or generic oauth2 providers",
+        },
+        token_endpoint: {
+          type: "string",
+          description: "Custom token URL — only needed for okta or generic oauth2 providers",
+        },
+      },
+      required: ["provider", "scopes", "secret_name"],
+    },
+  },
+  {
+    name: "resolve_secret",
+    description:
+      "Resolve a secret reference ID (from get_secret) to get the actual token value. Use this to pass the real token to another MCP tool.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        reference_id: {
+          type: "string",
+          description: "The reference ID returned by get_secret",
+        },
+      },
+      required: ["reference_id"],
     },
   },
   {
@@ -263,6 +314,79 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 null,
                 2
               ),
+            },
+          ],
+        };
+      }
+
+      case "start_oauth_flow": {
+        const { provider, scopes, secret_name, authorization_endpoint, token_endpoint } =
+          args as unknown as {
+            provider: string;
+            scopes: string[];
+            secret_name: string;
+            authorization_endpoint?: string;
+            token_endpoint?: string;
+          };
+
+        const providerConfig = credentialsManager.getProviderConfig(
+          provider as import("./types.js").Provider
+        );
+        if (!providerConfig?.clientId || !providerConfig?.clientSecret) {
+          throw new Error(
+            `Provider '${provider}' is not configured. Set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET environment variables.`
+          );
+        }
+
+        const result = await startOAuthWebFlow({
+          provider,
+          clientId: providerConfig.clientId,
+          clientSecret: providerConfig.clientSecret,
+          scopes,
+          authorizationEndpoint: authorization_endpoint ?? providerConfig.tokenEndpoint,
+          tokenEndpoint: token_endpoint ?? providerConfig.tokenEndpoint,
+        });
+
+        credentialsManager.storeSecret(secret_name, result.accessToken, {
+          provider,
+          scope: result.scope ?? scopes.join(" "),
+        });
+        if (result.refreshToken) {
+          credentialsManager.storeSecret(`${secret_name}_refresh`, result.refreshToken, {
+            provider,
+            type: "refresh_token",
+          });
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  success: true,
+                  message: `OAuth flow completed. Access token stored as '${secret_name}'. Use get_secret then resolve_secret to retrieve it.`,
+                  tokenType: result.tokenType,
+                  scope: result.scope,
+                  expiresIn: result.expiresIn,
+                  hasRefreshToken: !!result.refreshToken,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      }
+
+      case "resolve_secret": {
+        const { reference_id } = args as unknown as { reference_id: string };
+        const value = credentialsManager.resolveSecret(reference_id);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ success: true, value }, null, 2),
             },
           ],
         };

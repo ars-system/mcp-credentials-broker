@@ -32,39 +32,73 @@ export class CredentialsManager {
     // GitHub provider
     this.providerConfigs.set("github", {
       type: "github",
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
       tokenEndpoint: "https://github.com/login/oauth/access_token",
-      defaultTTL: 3600, // 1 hour
-      maxTTL: 28800, // 8 hours
+      defaultTTL: 3600,
+      maxTTL: 28800,
     });
 
     // AWS provider
     this.providerConfigs.set("aws", {
       type: "aws",
-      defaultTTL: 3600, // 1 hour
-      maxTTL: 43200, // 12 hours
+      clientId: process.env.AWS_CLIENT_ID,
+      clientSecret: process.env.AWS_CLIENT_SECRET,
+      defaultTTL: 3600,
+      maxTTL: 43200,
     });
 
     // GCP provider
     this.providerConfigs.set("gcp", {
       type: "gcp",
-      defaultTTL: 3600, // 1 hour
-      maxTTL: 43200, // 12 hours
+      clientId: process.env.GCP_CLIENT_ID,
+      clientSecret: process.env.GCP_CLIENT_SECRET,
+      defaultTTL: 3600,
+      maxTTL: 43200,
     });
 
     // Azure provider
     this.providerConfigs.set("azure", {
       type: "azure",
+      clientId: process.env.AZURE_CLIENT_ID,
+      clientSecret: process.env.AZURE_CLIENT_SECRET,
       tokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-      defaultTTL: 3600, // 1 hour
-      maxTTL: 43200, // 12 hours
+      defaultTTL: 3600,
+      maxTTL: 43200,
     });
 
     // Generic OAuth2 provider
     this.providerConfigs.set("oauth2", {
       type: "oauth2",
-      defaultTTL: 3600, // 1 hour
-      maxTTL: 86400, // 24 hours
+      clientId: process.env.OAUTH2_CLIENT_ID,
+      clientSecret: process.env.OAUTH2_CLIENT_SECRET,
+      defaultTTL: 3600,
+      maxTTL: 86400,
     });
+
+    // Okta provider
+    this.providerConfigs.set("okta", {
+      type: "okta",
+      clientId: process.env.OKTA_CLIENT_ID,
+      clientSecret: process.env.OKTA_CLIENT_SECRET,
+      tokenEndpoint: process.env.OKTA_DOMAIN
+        ? `https://${process.env.OKTA_DOMAIN}/oauth2/v1/token`
+        : undefined,
+      defaultTTL: 3600,
+      maxTTL: 43200,
+    });
+  }
+
+  getProviderConfig(provider: Provider): ProviderConfig | undefined {
+    return this.providerConfigs.get(provider);
+  }
+
+  hasSecret(name: string): boolean {
+    return this.secrets.has(name);
+  }
+
+  resolveSecret(referenceId: string): string {
+    return this.resolveSecretReference(referenceId);
   }
 
   /**

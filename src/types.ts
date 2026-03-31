@@ -54,7 +54,7 @@ export interface RevokeTokenParams {
   token_id: string;
 }
 
-export type Provider = "github" | "aws" | "gcp" | "azure" | "oauth2" | "custom";
+export type Provider = "github" | "aws" | "gcp" | "azure" | "oauth2" | "okta" | "custom";
 
 export interface ProviderConfig {
   type: Provider;
